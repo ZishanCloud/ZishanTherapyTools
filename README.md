@@ -4,5 +4,5 @@
 * in Termux:
 
 ```bash
-curl -sLO https://raw.githubusercontent.com/ZishanCloud/auto-setup-tools/main/Termux/setup.sh && bash setup.sh
+curl -sLO https://raw.githubusercontent.com/ZishanCloud/ZishanTherapyTools/main/Termux/setup.sh && bash setup.sh
 ```
