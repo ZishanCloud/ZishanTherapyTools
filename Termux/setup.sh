@@ -100,7 +100,7 @@ menu_adb() {
                 ;;
             3)
                 clear
-                echo "[*] Rebooting to Bootloader/Fastboot..."
+                echo "[*] Rebooting to Bootloader..."
                 # --- ADD COMMANDS BELOW ---
                 termux-adb reboot bootloader
                 # --- ADD COMMANDS ABOVE ---
@@ -157,15 +157,56 @@ menu_fastboot() {
                 clear
                 echo "[*] Rebooting device to System..."
                 # --- ADD COMMANDS BELOW ---
-                termux-fastboot reboot
+    
+                # ৩ সেকেন্ডের জন্য কমান্ডটি রান করবে
+                timeout 3s termux-fastboot reboot
+                
+                # যদি ৩ সেকেন্ড পার হয়ে যায় এবং কমান্ড আটকে থাকে (Timeout Error 124)
+                if [ $? -eq 124 ]; then
+                    echo ""
+                    echo "[!] No fastboot device detected or connection timed out!"
+                fi
+                
                 # --- ADD COMMANDS ABOVE ---
                 pause_menu
                 ;;
             3)
                 clear
-                echo "[*] Rebooting device to System..."
+                echo "[*] Flashing boot Image..."
                 # --- ADD COMMANDS BELOW ---
-                termux-fastboot flash boot mboot.img
+                
+                # ফাইলের লোকেশন ভ্যারিয়েবল
+                BOOT_IMG="/sdcard/Download/mboot.img"
+                
+                # ১. প্রথমে চেক করবে ফাইলটি আছে কি না
+                if [ -f "$BOOT_IMG" ]; then
+                    echo "[✔] File found: $BOOT_IMG"
+                    echo "[*] Checking for connected fastboot device (waiting 3s)..."
+                    
+                    # ২. শুধু ডিভাইস চেক করার জন্য ৩ সেকেন্ড সময় নেবে (ফ্ল্যাশের জন্য নয়)
+                    timeout 3s termux-fastboot devices > /dev/null 2>&1
+                    
+                    if [ $? -eq 124 ]; then
+                        # ৩ সেকেন্ডে ডিভাইস না পেলে আটকে না থেকে এরর দেখাবে
+                        echo ""
+                        echo "[!] Error: No fastboot device detected!"
+                        echo "Please connect your phone in fastboot mode and try again."
+                    else
+                        # ৩. ডিভাইস পেলে কোনো টাইমআউট ছাড়া ফ্ল্যাশ করবে (যত সময় লাগুক)
+                        echo "[✔] Device detected!"
+                        echo "[*] Flashing in progress. Please do not disconnect..."
+                        
+                        termux-fastboot flash boot "$BOOT_IMG"
+                        
+                        echo "[✔] Flashing process finished!"
+                    fi
+                else
+                    # যদি Downloads ফোল্ডারে ফাইলটি না পাওয়া যায়
+                    echo ""
+                    echo "[!] Error: mboot.img file not found in Downloads folder!"
+                    echo "[!] Please put the mboot.img file in your Downloads folder and try again."
+                fi
+                
                 # --- ADD COMMANDS ABOVE ---
                 pause_menu
                 ;;
@@ -189,9 +230,9 @@ while true; do
     echo "========================================="
     echo "         MY MASTER AUTO TOOL             "
     echo "========================================="
-    echo "1. Setup Menu    (Installations & Updates)"
-    echo "2. ADB Menu      (ADB Commands)"
-    echo "3. Fastboot Menu (Fastboot Commands)"
+    echo "1. Setup Menu"
+    echo "2. ADB Menu"
+    echo "3. Fastboot Menu"
     echo "0. Exit Tool"
     echo "========================================="
     read -p "Select Category: " main_choice
