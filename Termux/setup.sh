@@ -22,7 +22,7 @@ menu_setup() {
         echo "9. Back to Main Menu"
         echo "0. Exit Tool"
         echo "========================================="
-        read -p "Enter your choice: " choice
+        read -p "Enter your choice: " choice < /dev/tty
 
         case $choice in
             1)
